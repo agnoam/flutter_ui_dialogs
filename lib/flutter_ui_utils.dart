@@ -2,14 +2,14 @@ library flutter_ui_utils;
 
 // Core
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 // Plugins
 import 'package:progress_hud/progress_hud.dart';
 
 class Dialogs {
-
   static bool _isSpinnerShown = false;
 
   /// Shows a basic alert with Ok button on it
@@ -24,36 +24,43 @@ class Dialogs {
   ///
   /// `onDismiss` CallBack function that calls back
   /// when the dialog dismissed = not hit OK
-  static showAlert( BuildContext context, String body, {
-    String title = 'Alert',
-    String buttonName = 'OK',
-    Function onResolve,
-    Function onDismiss,
-    bool showCancelButton = false
-  }) {
+  static Future<void> alert(
+    BuildContext context,
+    String body,
+    { String title, String btnName, VoidCallback onResolve, bool showCancel = false, VoidCallback onDismiss }
+  ) {
+
     bool clicked = false;
-    if(_isSpinnerShown) {
-      hideLoadingSpinner(context);
+
+    if (title == null || title.isEmpty) {
+      title = 'Alert';
     }
+
+    if (btnName == null || btnName.isEmpty) {
+      btnName = 'OK';
+    }
+
+    print('title is: $title');
+    print('btnName is: $btnName');
 
     AlertDialog dialog = new AlertDialog(
         title: new Text(title),
         content: new Text(body),
         actions: <Widget>[
-          new FlatButton(child: new Text(buttonName), onPressed: () {
+          FlatButton(child: new Text(btnName), onPressed: () {
             Navigator.of(context).pop(); // Hides the Alert
             clicked = true;
 
-            if(onResolve != null) {
+            if (onResolve != null) {
               onResolve();
             }
           }),
-          showCancelButton ?
-          new FlatButton(child: new Text('Cancel'), onPressed: () {
+          showCancel ?
+          FlatButton(child: new Text('Cancel'), onPressed: () {
             Navigator.of(context).pop(); // Hides the Alert
             clicked = true;
 
-            if(onDismiss != null){
+            if (onDismiss != null){
               onDismiss();
             }
           })
@@ -62,9 +69,11 @@ class Dialogs {
         ]
     );
 
-    showDialog(context: context, builder: (BuildContext context) => dialog).then((val) {
-      if(!clicked) {
-        if(onDismiss != null){
+    return showDialog(context: context, builder: (BuildContext context) => dialog).then((val) {
+      if (!clicked) {
+        print('clicked outside');
+
+        if (onDismiss != null){
           onDismiss();
         }
       }
@@ -86,18 +95,14 @@ class Dialogs {
   /// `borderRadius` The angle of circular border of the dialog
   ///
   /// `text` Text written by the dialog
-  static void showLoadingSpinner(BuildContext context, {
-    int secondsToHide = 30,
+  static void loadingSpinner(BuildContext context, {
+    int secondsToHide,
     Color backgroundColor,
     Color color,
     Color containerColor,
     double borderRadius,
     String text
   }) {
-    if(_isSpinnerShown) {
-      hideLoadingSpinner(context);
-    }
-
     ProgressHUD progressSpinner = ProgressHUD(
         backgroundColor: backgroundColor != null ? backgroundColor : Colors.black12,
         color: color != null ? color : Theme.of(context).primaryColorLight,
@@ -109,15 +114,20 @@ class Dialogs {
     showDialog(context: context, barrierDismissible: false, builder: (BuildContext context) => progressSpinner);
     _isSpinnerShown = true;
 
-    // This is like setTimeout in JavaScript
-    Future.delayed(Duration(seconds: secondsToHide), () => hideLoadingSpinner(context));
+    if (secondsToHide != null && secondsToHide > 0) {
+      // This is like setTimeout in JavaScript
+      Future.delayed(Duration(seconds: secondsToHide), () => hideLoadingSpinner(context));
+    } else {
+      print('There is no secondsToHide');
+      Future.delayed(const Duration(seconds: 30), () => hideLoadingSpinner(context));
+    }
   }
 
   /// Hides the loading dialog manually
   ///
   /// `context` The same context received by the showLoadingSpinner function
   static void hideLoadingSpinner(BuildContext context) {
-    if(_isSpinnerShown){
+    if (_isSpinnerShown){
       Navigator.pop(context);
 
       // Toggle to false the flag of the loading spinner
@@ -135,21 +145,16 @@ class Dialogs {
   ///
   /// `buttons` Map<String, Function> - The name of the button (String),
   /// The function that you want to run after (Function)
-  static void confirmDialog(BuildContext context, String body, String title,
-      { Map<String, Function> buttons, bool showCancelButton = false }
-      ) {
-    if(_isSpinnerShown) {
-      hideLoadingSpinner(context);
-    }
+  static void confirmDialog(BuildContext context, String body, String title, { Map<String, void Function()> buttons }) {
+    var widgetArr = <Widget>[];
 
-    List<Widget> widgetArr = [];
-    if(buttons.isNotEmpty) {
-      buttons.forEach((buttonName, funToRun) {
+    if (buttons.isNotEmpty) {
+      buttons.forEach((String buttonName, Function funToRun) {
         widgetArr.add(
             new FlatButton(child: Text(buttonName), onPressed: () {
               // Running the function that commited to this button
-              funToRun();
               Navigator.of(context).pop(); // Hides the Alert
+              funToRun();
             })
         );
       });
@@ -158,11 +163,9 @@ class Dialogs {
         Navigator.of(context).pop(); // Hides the Alert
       });
 
-      if(showCancelButton) {
-        widgetArr[1] = new FlatButton(child: Text('Cancel'), onPressed: () {
-          Navigator.of(context).pop(); // Hides the Alert
-        });
-      }
+      widgetArr[0] = new FlatButton(child: Text('Cancel'), onPressed: () {
+        Navigator.of(context).pop(); // Hides the Alert
+      });
     }
 
     AlertDialog dialog = new AlertDialog(
@@ -170,10 +173,11 @@ class Dialogs {
         content: Text(body),
         actions: widgetArr
     );
-    showDialog(context: context, child: dialog);
+
+    showDialog(context: context, builder: (BuildContext context) => dialog);
   }
 
-  /// Showing propmt dialog, which is a dialog with textField inside it
+  /// Showing prompt dialog, which is a dialog with textField inside it
   ///
   /// `context` The context of the page you call from
   ///
@@ -182,7 +186,7 @@ class Dialogs {
   /// `body` The body of the dialog (text on top of the textField)
   ///
   /// `placeholder` A text that written in the TextField and
-  ///  disapears when the user start to type
+  ///  disappears when the user start to type
   ///
   /// `textCtrl` A custom text controller
   ///
@@ -191,16 +195,15 @@ class Dialogs {
   ///
   /// `showCancelButton` A switch you can set,
   /// if you want to see the Cancel button of the dialog. default is false
-  static Future<String> propmt(
-      BuildContext context, String title, String body, String placeholder,
-      { TextEditingController textCtrl, TextInputType keyboardType = TextInputType.text, bool showCancelButton = false }
-      ) {
-    if(_isSpinnerShown) {
-      hideLoadingSpinner(context);
-    }
-
-    String data;
-    bool isOk = false;
+  static Future<String> prompt(
+      BuildContext context,
+      String title,
+      String body,
+      String placeholder,
+      { bool isPass = false, TextInputType keyboardType }
+  ) {
+    String data = '';
+    bool isOk = true;
 
     return showDialog(
         context: context,
@@ -209,19 +212,19 @@ class Dialogs {
               title: Text(title),
               children: <Widget>[
                 Padding(
-                    padding: EdgeInsets.only(left: 25, bottom: 5),
+                    padding: EdgeInsets.only(left: 25, right: 25, bottom: 10),
                     child: Text(body)
                 ),
                 Padding(
                     padding: EdgeInsets.only(left: 25, right: 25, bottom: 25),
                     child: TextField(
-                        controller: textCtrl,
-                        autofocus: true,
                         keyboardType: keyboardType,
-                        decoration: InputDecoration(
-                            hintText: placeholder
-                        ),
-                        onChanged: (text) => data = text
+                        obscureText: isPass,
+                        autofocus: true,
+                        decoration: InputDecoration(hintText: placeholder),
+                        onChanged: (text) {
+                          data = text;
+                        }
                     )
                 ),
                 Row(
@@ -234,7 +237,6 @@ class Dialogs {
                             Navigator.of(context).pop();
                           }
                       ),
-                      showCancelButton ?
                       FlatButton(
                           child: Text('Cancel'),
                           onPressed: () {
@@ -242,19 +244,155 @@ class Dialogs {
                             Navigator.of(context).pop();
                           }
                       )
-                          :
-                      SizedBox()
                     ]
                 )
               ]
           );
         }
     ).then((val) {
-      if(isOk && (data != null || data != '')) {
+      if (isOk) {
         return data;
       }
+
+      if (isOk == false) {
+        throw Exception('Typed nothing');
+      }
+
       return null;
     });
+  }
+
+  static double calculatePercent(double whole, double targetPercent) {
+    return (targetPercent * whole) / 100;
+  }
+
+  /// Showing alert dialog with radio button tiles inside it
+  ///
+  /// `context` The context of the page you call from
+  ///
+  /// `title` The title of the dialog (optional)
+  ///
+  /// `body` The body of the dialog (a little brief before the tiles, optional)
+  ///
+  /// `options` A map with the title of the button as key,
+  /// and the ChoiceData as value
+  ///
+  /// `onSubmit` a function to run after the user choose a button
+  static void multiChoiceAlert({
+    @required BuildContext context,
+    String title,
+    String body,
+    @required Map<String, ChoiceData> options,
+    @required CallBackFunc onSubmit
+  }) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return _ChoicesDialog(
+            title: title,
+            body: body,
+            options: options,
+            onSubmit: onSubmit
+        );
+      }
+    );
+  }
+}
+
+class ChoiceData {
+  dynamic data;
+  bool isFocused;
+
+  /// Object of Dialogs.multiChoiceAlert radio tiles alert
+  ///
+  /// `isFocused` is this button focused ?
+  ///
+  /// `data` a data to send via callback when the user chooses this button
+  ChoiceData({ this.isFocused = false, @required this.data });
+}
+
+typedef void CallBackFunc(value);
+class _ChoicesDialog extends StatefulWidget {
+  final String title;
+  final String body;
+  final Map<String, ChoiceData> options;
+  final CallBackFunc onSubmit;
+
+  /// Title of the dialog's body widget
+  ///
+  /// `title` The title of the alert (optional, default: 'Pick one')
+  ///
+  /// `body` The body string of the alert
+  ///
+  /// `options` All the options map<Title, returnData>
+  ///
+  /// `onSubmit` A function that returns the value the user chose
+  /// after the dialog resolves
+  _ChoicesDialog({
+    this.title = 'Pick one',
+    this.body,
+    @required this.options,
+    @required this.onSubmit
+  });
+
+  @override
+  _ChoicesDialogState createState() => _ChoicesDialogState();
+}
+
+class _ChoicesDialogState extends State<_ChoicesDialog> {
+  String _selected;
+
+  // The function that calls the callback after the dialog hide
+  void submit() {
+    // Hide the dialog
+    Navigator.pop(context);
+    widget.onSubmit(widget.options[_selected].data);
+  }
+
+  // Tiles generator
+  List<Widget> _buildList() {
+    bool alreadyFocused = false;
+    List<Widget> content = [
+      widget.body != null ?
+        widget.body.isNotEmpty ?
+          Padding(
+              padding: EdgeInsets.only(left: 50),
+              child: Text(widget.body)
+          )
+        :
+          SizedBox()
+      :
+        SizedBox()
+    ];
+
+    widget.options.forEach((String name, ChoiceData value) {
+      if (!alreadyFocused && value.isFocused) {
+        setState(() => _selected = name);
+        alreadyFocused = true;
+      }
+
+      content.add(
+        RadioListTile(
+            groupValue: _selected,
+            value: value.data,
+            title: Text(name),
+            onChanged: (changedVal) {
+              setState(() => _selected = name);
+              submit();
+            }
+        ),
+      );
+    });
+
+    return content;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SimpleDialog(
+        title: Text(widget.title),
+        children: _buildList()
+    );
   }
 }
 
@@ -273,9 +411,9 @@ class FavoritesWidgets {
   ///
   /// `subtitleFontSize` The custom size of the subtitle
   static AppBar appBarWithSubtitle(
-      AppBar bar, String title, String subtitle,
-      { Color textColor, double titleFontSize = 18, double subtitleFontSize = 12 }
-      ) {
+    AppBar bar, String title, String subtitle,
+    { Color textColor, double titleFontSize = 18, double subtitleFontSize = 12 }
+  ) {
     return AppBar(
         title: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -325,6 +463,9 @@ class FavoritesWidgets {
 }
 
 class HexColor extends Color {
+  /// Getting the Color Object from an Hex color string
+  ///
+  /// `hexColor` const dart [String]
   static int _getColorFromHex(String hexColor) {
     hexColor = hexColor.toUpperCase().replaceAll("#", "");
     if (hexColor.length == 6) {
@@ -341,6 +482,6 @@ class HexColor extends Color {
     return '#$hexVal';
   }
 
-  /// Use `hexColor` hex string instead of the dart's [Color] class
+  /// You can use `hexColor` hex string instead of the dart's [Color] class
   HexColor(final String hexColor) : super(_getColorFromHex(hexColor));
 }
