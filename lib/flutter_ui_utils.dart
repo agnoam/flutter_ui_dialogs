@@ -180,11 +180,11 @@ class Dialogs {
               title: Text(title),
               children: <Widget>[
                 Padding(
-                    padding: EdgeInsets.fromLTRB(25, 25, 0, 10),
+                    padding: EdgeInsets.only(left: 25, top: 5),
                     child: Text(body)
                 ),
                 Padding(
-                    padding: EdgeInsets.fromLTRB(25, 25, 0, 25),
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 10),
                     child: TextField(
                         keyboardType: keyboardType,
                         obscureText: isPass,
@@ -368,7 +368,12 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
     bool alreadyFocused = false;
     List<Widget> content = [
       widget.body.isNotEmpty ?
-        Text(widget.body) : SizedBox()
+        Padding(
+          padding: EdgeInsets.only(left: 25),
+          child: Text(widget.body)
+        )
+      :
+        SizedBox()
     ];
 
     widget.options.forEach((String name, ChoiceData value) {
