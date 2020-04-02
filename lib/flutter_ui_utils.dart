@@ -24,17 +24,13 @@ class Dialogs {
   ///
   /// `onDismiss` CallBack function that calls back
   /// when the dialog dismissed = not hit OK
-  static Future<void> alert(
-    BuildContext context,
-    String body,
-    {
-      String title = 'Alert',
-      String btnName = 'OK',
-      bool showCancel = false,
-      VoidCallback onResolve,
-      VoidCallback onDismiss
-    }
-  ) {
+  static Future<void> alert(BuildContext context, String body, {
+    String title = 'Alert',
+    String btnName = 'OK',
+    bool showCancel = false,
+    VoidCallback onResolve,
+    VoidCallback onDismiss
+  }) {
     assert(context != null);
     assert(body != null);
     assert(title != null);
@@ -45,29 +41,29 @@ class Dialogs {
     debugPrint('btnName is: $btnName');
 
     AlertDialog dialog = new AlertDialog(
-        title: Text(title),
-        content: Text(body),
-        actions: <Widget>[
-          FlatButton(child: Text(btnName), onPressed: () {
+      title: Text(title),
+      content: Text(body),
+      actions: <Widget>[
+        FlatButton(child: Text(btnName), onPressed: () {
+          Navigator.of(context).pop(); // Hides the Alert
+          clicked = true;
+
+          if (onResolve != null) {
+            onResolve();
+          }
+        }),
+        showCancel ?
+          FlatButton(child: new Text('Cancel'), onPressed: () {
             Navigator.of(context).pop(); // Hides the Alert
             clicked = true;
 
-            if (onResolve != null) {
-              onResolve();
+            if (onDismiss != null){
+              onDismiss();
             }
-          }),
-          showCancel ?
-            FlatButton(child: new Text('Cancel'), onPressed: () {
-              Navigator.of(context).pop(); // Hides the Alert
-              clicked = true;
-
-              if (onDismiss != null){
-                onDismiss();
-              }
-            })
-          :
-            SizedBox()
-        ]
+          })
+        :
+          SizedBox()
+      ]
     );
 
     return showDialog(context: context, builder: (BuildContext context) => dialog).then((val) {
@@ -166,7 +162,7 @@ class Dialogs {
         bool isPass = false,
         TextInputType keyboardType
       }
-  ) {
+    ) {
     assert(context != null);
     assert(body != null);
 
@@ -174,45 +170,48 @@ class Dialogs {
     bool isOk = false;
 
     return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return SimpleDialog(
-              title: Text(title),
-              children: <Widget>[
-                Padding(
-                    padding: EdgeInsets.only(left: 25, bottom: 20),
-                    child: Text(body)
-                ),
-                Padding(
-                    padding: EdgeInsets.fromLTRB(25, 0, 25, 10),
-                    child: TextField(
-                        keyboardType: keyboardType,
-                        obscureText: isPass,
-                        autofocus: true,
-                        decoration: InputDecoration(hintText: placeholder),
-                        onChanged: (String text) => data = text
-                    )
-                ),
-                Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: <Widget>[
-                      FlatButton(
-                          child: Text('OK'),
-                          onPressed: () {
-                            isOk = true;
-                            Navigator.of(context).pop();
-                          }
-                      ),
-                      FlatButton(
-                          child: Text('Cancel'),
-                          onPressed: () {
-                            isOk = false;
-                            Navigator.of(context).pop();
-                          }
-                      )
-                    ]
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+            title: Text(title),
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(left: 25, bottom: 10),
+                child: Text(body)
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 5, right: 25, left: 25),
+                child: TextField(
+                  keyboardType: keyboardType,
+                  obscureText: isPass,
+                  autofocus: true,
+                  decoration: InputDecoration(hintText: placeholder),
+                  onChanged: (String text) => data = text
                 )
-              ]
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: <Widget>[
+                    FlatButton(
+                      child: Text('OK'),
+                      onPressed: () {
+                        isOk = true;
+                        Navigator.of(context).pop();
+                      }
+                    ),
+                    FlatButton(
+                      child: Text('Cancel'),
+                      onPressed: () {
+                        isOk = false;
+                        Navigator.of(context).pop();
+                      }
+                    )
+                  ]
+                )
+              )
+            ]
           );
         }
     ).then((val) {
@@ -234,17 +233,17 @@ class Dialogs {
   ///
   /// `buttons` Map<String, Function> - The name of the button (String),
   /// The function that you want to run after (Function)
-  static void confirmDialog(BuildContext context, String body, String title, { Map<String, void Function()> buttons }) {
+  static void confirm(BuildContext context, String body, String title, { Map<String, void Function()> buttons }) {
     var widgetArr = <Widget>[];
 
     if (buttons.isNotEmpty) {
       buttons.forEach((String buttonName, Function funToRun) {
         widgetArr.add(
-            new FlatButton(child: Text(buttonName), onPressed: () {
-              // Running the function that commited to this button
-              Navigator.of(context).pop(); // Hides the Alert
-              funToRun();
-            })
+          new FlatButton(child: Text(buttonName), onPressed: () {
+            // Running the function that commited to this button
+            Navigator.of(context).pop(); // Hides the Alert
+            funToRun();
+          })
         );
       });
     } else {
@@ -258,9 +257,9 @@ class Dialogs {
     }
 
     AlertDialog dialog = new AlertDialog(
-        title: Text(title),
-        content: Text(body),
-        actions: widgetArr
+      title: Text(title),
+      content: Text(body),
+      actions: widgetArr
     );
 
     showDialog(context: context, builder: (BuildContext context) => dialog);
@@ -301,10 +300,10 @@ class Dialogs {
       context: context,
       builder: (BuildContext context) {
         return _ChoicesDialog(
-            title: title,
-            body: body,
-            options: options,
-            onSubmit: onSubmit
+          title: title,
+          body: body,
+          options: options,
+          onSubmit: onSubmit
         );
       }
     );
@@ -369,8 +368,8 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
     List<Widget> content = [
       widget.body.isNotEmpty ?
         Padding(
-          padding: EdgeInsets.only(left: 25, bottom: 5),
-          child: Text(widget.body)
+            padding: EdgeInsets.only(left: 25, bottom: 5),
+            child: Text(widget.body)
         )
       :
         SizedBox()
@@ -384,14 +383,14 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
 
       content.add(
         RadioListTile(
-            groupValue: _selected,
-            value: value.data,
-            title: Text(name),
-            onChanged: (changedVal) {
-              setState(() => _selected = name);
-              submit();
-            }
-        ),
+          groupValue: _selected,
+          value: value.data,
+          title: Text(name),
+          onChanged: (changedVal) {
+            setState(() => _selected = name);
+            submit();
+          }
+        )
       );
     });
 
@@ -422,27 +421,27 @@ class FavoritesWidgets {
   ///
   /// `subtitleFontSize` The custom size of the subtitle
   static AppBar appBarWithSubtitle(
-    AppBar bar, String title, String subtitle,
-    { Color textColor, double titleFontSize = 18, double subtitleFontSize = 12 }
-  ) {
+      AppBar bar, String title, String subtitle,
+      { Color textColor, double titleFontSize = 18, double subtitleFontSize = 12 }
+      ) {
     return AppBar(
         title: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-                title,
-                style: TextStyle(
-                    color: textColor != null ? Colors.white : textColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: titleFontSize != 0 ? titleFontSize : 18
-                )
+              title,
+              style: TextStyle(
+                color: textColor != null ? Colors.white : textColor,
+                fontWeight: FontWeight.bold,
+                fontSize: titleFontSize != 0 ? titleFontSize : 18
+              )
             ),
             Text(
               subtitle,
               style: TextStyle(
-                  color: textColor != null ? Colors.white : textColor,
-                  fontSize: subtitleFontSize != 0 ? subtitleFontSize : 12
+                color: textColor != null ? Colors.white : textColor,
+                fontSize: subtitleFontSize != 0 ? subtitleFontSize : 12
               )
             )
           ]
