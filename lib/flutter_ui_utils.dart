@@ -27,27 +27,28 @@ class Dialogs {
   static Future<void> alert(
     BuildContext context,
     String body,
-    { String title, String btnName, VoidCallback onResolve, bool showCancel = false, VoidCallback onDismiss }
+    {
+      String title = 'Alert',
+      String btnName = 'OK',
+      bool showCancel = false,
+      VoidCallback onResolve,
+      VoidCallback onDismiss
+    }
   ) {
+    assert(context != null);
+    assert(body != null);
+    assert(title != null);
+    assert(btnName != null);
 
     bool clicked = false;
-
-    if (title == null || title.isEmpty) {
-      title = 'Alert';
-    }
-
-    if (btnName == null || btnName.isEmpty) {
-      btnName = 'OK';
-    }
-
-    print('title is: $title');
-    print('btnName is: $btnName');
+    debugPrint('title is: $title');
+    debugPrint('btnName is: $btnName');
 
     AlertDialog dialog = new AlertDialog(
-        title: new Text(title),
-        content: new Text(body),
+        title: Text(title),
+        content: Text(body),
         actions: <Widget>[
-          FlatButton(child: new Text(btnName), onPressed: () {
+          FlatButton(child: Text(btnName), onPressed: () {
             Navigator.of(context).pop(); // Hides the Alert
             clicked = true;
 
@@ -56,22 +57,22 @@ class Dialogs {
             }
           }),
           showCancel ?
-          FlatButton(child: new Text('Cancel'), onPressed: () {
-            Navigator.of(context).pop(); // Hides the Alert
-            clicked = true;
+            FlatButton(child: new Text('Cancel'), onPressed: () {
+              Navigator.of(context).pop(); // Hides the Alert
+              clicked = true;
 
-            if (onDismiss != null){
-              onDismiss();
-            }
-          })
-              :
-          SizedBox()
+              if (onDismiss != null){
+                onDismiss();
+              }
+            })
+          :
+            SizedBox()
         ]
     );
 
     return showDialog(context: context, builder: (BuildContext context) => dialog).then((val) {
       if (!clicked) {
-        print('clicked outside');
+        debugPrint('clicked outside');
 
         if (onDismiss != null){
           onDismiss();
@@ -96,25 +97,28 @@ class Dialogs {
   ///
   /// `text` Text written by the dialog
   static void loadingSpinner(BuildContext context, {
-    int secondsToHide,
+    int secondsToHide = 0,
     Color backgroundColor,
     Color color,
     Color containerColor,
     double borderRadius,
-    String text
+    String text = ''
   }) {
+    assert(secondsToHide != null);
+    assert(text != null);
+
     ProgressHUD progressSpinner = ProgressHUD(
         backgroundColor: backgroundColor != null ? backgroundColor : Colors.black12,
         color: color != null ? color : Theme.of(context).primaryColorLight,
         containerColor: containerColor != null ? containerColor : Colors.transparent,
         borderRadius: borderRadius != null ? borderRadius : 5.0,
-        text: text != null || text != '' ? text : 'Loading...'
+        text: text != '' ? text : 'Loading...'
     );
 
     showDialog(context: context, barrierDismissible: false, builder: (BuildContext context) => progressSpinner);
     _isSpinnerShown = true;
 
-    if (secondsToHide != null && secondsToHide > 0) {
+    if (secondsToHide > 0) {
       // This is like setTimeout in JavaScript
       Future.delayed(Duration(seconds: secondsToHide), () => hideLoadingSpinner(context));
     } else {
@@ -135,8 +139,93 @@ class Dialogs {
     }
   }
 
-  /// Showing a dialog with multiple buttons with custom functions in each
+  /// Showing prompt dialog, which is a dialog with textField inside it
   ///
+  /// `context` The context of the page you call from
+  ///
+  /// `title` The title of the dialog
+  ///
+  /// `body` The body of the dialog (text on top of the textField)
+  ///
+  /// `placeholder` A text that written in the TextField and
+  ///  disappears when the user start to type
+  ///
+  /// `textCtrl` A custom text controller
+  ///
+  /// `keyboardType` The type of the keyboard (such as email, numbers)
+  ///  default is text
+  ///
+  /// `showCancelButton` A switch you can set,
+  /// if you want to see the Cancel button of the dialog. default is false
+  static Future<String> prompt(
+      BuildContext context,
+      String body,
+      {
+        String title = 'Attention',
+        String placeholder = 'Write something',
+        bool isPass = false,
+        TextInputType keyboardType
+      }
+  ) {
+    assert(context != null);
+    assert(body != null);
+
+    String data = '';
+    bool isOk = false;
+
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+              title: Text(title),
+              children: <Widget>[
+                Padding(
+                    padding: EdgeInsets.fromLTRB(25, 25, 0, 10),
+                    child: Text(body)
+                ),
+                Padding(
+                    padding: EdgeInsets.fromLTRB(25, 25, 0, 25),
+                    child: TextField(
+                        keyboardType: keyboardType,
+                        obscureText: isPass,
+                        autofocus: true,
+                        decoration: InputDecoration(hintText: placeholder),
+                        onChanged: (String text) => data = text
+                    )
+                ),
+                Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: <Widget>[
+                      FlatButton(
+                          child: Text('OK'),
+                          onPressed: () {
+                            isOk = true;
+                            Navigator.of(context).pop();
+                          }
+                      ),
+                      FlatButton(
+                          child: Text('Cancel'),
+                          onPressed: () {
+                            isOk = false;
+                            Navigator.of(context).pop();
+                          }
+                      )
+                    ]
+                )
+              ]
+          );
+        }
+    ).then((val) {
+      if (isOk)
+        return data;
+
+      // Typed nothing
+      return null;
+    });
+  }
+  ///
+
+  /// Showing a dialog with multiple buttons with custom functions in each
   /// `context` The context of your current page
   ///
   /// `body` The body of the confirm alert
@@ -177,91 +266,14 @@ class Dialogs {
     showDialog(context: context, builder: (BuildContext context) => dialog);
   }
 
-  /// Showing prompt dialog, which is a dialog with textField inside it
+  /// Calculate the number is percent of another number
   ///
-  /// `context` The context of the page you call from
+  /// `whole` The 100% number of yours
   ///
-  /// `title` The title of the dialog
+  /// `targetPercent` How much percent you need from the whole
   ///
-  /// `body` The body of the dialog (text on top of the textField)
-  ///
-  /// `placeholder` A text that written in the TextField and
-  ///  disappears when the user start to type
-  ///
-  /// `textCtrl` A custom text controller
-  ///
-  /// `keyboardType` The type of the keyboard (such as email, numbers)
-  ///  default is text
-  ///
-  /// `showCancelButton` A switch you can set,
-  /// if you want to see the Cancel button of the dialog. default is false
-  static Future<String> prompt(
-      BuildContext context,
-      String title,
-      String body,
-      String placeholder,
-      { bool isPass = false, TextInputType keyboardType }
-  ) {
-    String data = '';
-    bool isOk = true;
-
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return SimpleDialog(
-              title: Text(title),
-              children: <Widget>[
-                Padding(
-                    padding: EdgeInsets.only(left: 25, right: 25, bottom: 10),
-                    child: Text(body)
-                ),
-                Padding(
-                    padding: EdgeInsets.only(left: 25, right: 25, bottom: 25),
-                    child: TextField(
-                        keyboardType: keyboardType,
-                        obscureText: isPass,
-                        autofocus: true,
-                        decoration: InputDecoration(hintText: placeholder),
-                        onChanged: (text) {
-                          data = text;
-                        }
-                    )
-                ),
-                Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: <Widget>[
-                      FlatButton(
-                          child: Text('OK'),
-                          onPressed: () {
-                            isOk = true;
-                            Navigator.of(context).pop();
-                          }
-                      ),
-                      FlatButton(
-                          child: Text('Cancel'),
-                          onPressed: () {
-                            isOk = false;
-                            Navigator.of(context).pop();
-                          }
-                      )
-                    ]
-                )
-              ]
-          );
-        }
-    ).then((val) {
-      if (isOk) {
-        return data;
-      }
-
-      if (isOk == false) {
-        throw Exception('Typed nothing');
-      }
-
-      return null;
-    });
-  }
-
+  /// Returns the number is x% of the whole number
+  /// For example calculatePercent(100, 10) will return 10)
   static double calculatePercent(double whole, double targetPercent) {
     return (targetPercent * whole) / 100;
   }
@@ -333,7 +345,10 @@ class _ChoicesDialog extends StatefulWidget {
     this.body,
     @required this.options,
     @required this.onSubmit
-  });
+  }) :
+        assert(title != null),
+        assert(options != null),
+        assert(onSubmit != null);
 
   @override
   _ChoicesDialogState createState() => _ChoicesDialogState();
@@ -344,7 +359,6 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
 
   // The function that calls the callback after the dialog hide
   void submit() {
-    // Hide the dialog
     Navigator.pop(context);
     widget.onSubmit(widget.options[_selected].data);
   }
@@ -353,16 +367,8 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
   List<Widget> _buildList() {
     bool alreadyFocused = false;
     List<Widget> content = [
-      widget.body != null ?
-        widget.body.isNotEmpty ?
-          Padding(
-              padding: EdgeInsets.only(left: 50),
-              child: Text(widget.body)
-          )
-        :
-          SizedBox()
-      :
-        SizedBox()
+      widget.body.isNotEmpty ?
+        Text(widget.body) : SizedBox()
     ];
 
     widget.options.forEach((String name, ChoiceData value) {
@@ -416,30 +422,30 @@ class FavoritesWidgets {
   ) {
     return AppBar(
         title: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                  title,
-                  style: TextStyle(
-                      color: textColor != null ? Colors.white : textColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: titleFontSize != 0 ? titleFontSize : 18
-                  )
-              ),
-              Text(
-                  subtitle,
-                  style: TextStyle(
-                      color: textColor != null ? Colors.white : textColor,
-                      fontSize: subtitleFontSize != 0 ? subtitleFontSize : 12
-                  )
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+                title,
+                style: TextStyle(
+                    color: textColor != null ? Colors.white : textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: titleFontSize != 0 ? titleFontSize : 18
+                )
+            ),
+            Text(
+              subtitle,
+              style: TextStyle(
+                  color: textColor != null ? Colors.white : textColor,
+                  fontSize: subtitleFontSize != 0 ? subtitleFontSize : 12
               )
-            ]
+            )
+          ]
         ),
         leading: bar.leading != null ?
-        Padding(padding: const EdgeInsets.all(5.0), child: bar.leading)
-            :
-        bar.leading
+          Padding(padding: const EdgeInsets.all(5.0), child: bar.leading)
+        :
+          bar.leading
         ,
         actions: bar.actions,
         actionsIconTheme: bar.actionsIconTheme,
