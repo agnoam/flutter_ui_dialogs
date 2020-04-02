@@ -180,11 +180,11 @@ class Dialogs {
               title: Text(title),
               children: <Widget>[
                 Padding(
-                    padding: EdgeInsets.only(left: 25, bottom: 5),
+                    padding: EdgeInsets.only(left: 25, bottom: 20),
                     child: Text(body)
                 ),
                 Padding(
-                    padding: EdgeInsets.fromLTRB(25, 5, 25, 10),
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 10),
                     child: TextField(
                         keyboardType: keyboardType,
                         obscureText: isPass,
