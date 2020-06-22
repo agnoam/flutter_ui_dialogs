@@ -399,9 +399,12 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return SimpleDialog(
+    return AlertDialog(
         title: Text(widget.title),
-        children: _buildList()
+        children: _buildList(),
+        action: [
+            FlatButton(title: Text('Cancel'), onPressed: () => Navigator.pop(context))
+        ]
     );
   }
 }
