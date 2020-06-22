@@ -243,7 +243,7 @@ class Dialogs {
       buttons.forEach((String buttonName, Function funToRun) {
         widgetArr.add(
           new FlatButton(child: Text(buttonName), onPressed: () {
-            // Running the function that commited to this button
+            // Running the function that committed to this button
             Navigator.of(context).pop(); // Hides the Alert
             funToRun();
           })
@@ -385,7 +385,13 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
       );
     });
 
-    content.add(FlatButton(child: Text('Cancel'), onPressed: () => Navigator.pop(context)));
+    content.add(
+      Row(children: [FlatButton(
+          child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
+          onPressed: () => Navigator.pop(context)
+      )])
+    );
+
     return content;
   }
 
