@@ -24,7 +24,9 @@ class Dialogs {
   ///
   /// `onDismiss` CallBack function that calls back
   /// when the dialog dismissed = not hit OK
-  static Future<void> alert(BuildContext context, String body, {
+  static Future<void> alert({
+    @required BuildContext context,
+    @required String body,
     String title = 'Alert',
     String btnName = 'OK',
     bool showCancel = false,
@@ -153,16 +155,14 @@ class Dialogs {
   ///
   /// `showCancelButton` A switch you can set,
   /// if you want to see the Cancel button of the dialog. default is false
-  static Future<String> prompt(
-      BuildContext context,
-      String body,
-      {
-        String title = 'Attention',
-        String placeholder = 'Write something',
-        bool isPass = false,
-        TextInputType keyboardType
-      }
-    ) {
+  static Future<String> prompt({
+    @required BuildContext context,
+    @required String body,
+    String title = 'Attention',
+    String placeholder = 'Write something',
+    bool isPass = false,
+    TextInputType keyboardType
+  }) {
     assert(context != null);
     assert(body != null);
 
@@ -233,7 +233,10 @@ class Dialogs {
   ///
   /// `buttons` Map<String, Function> - The name of the button (String),
   /// The function that you want to run after (Function)
-  static void confirm(BuildContext context, String body, String title, { Map<String, void Function()> buttons }) {
+  static void confirm({
+    @required BuildContext context, @required String body,
+    String title = "Please choose", Map<String, void Function()> buttons
+  }) {
     var widgetArr = <Widget>[];
 
     if (buttons.isNotEmpty) {
@@ -263,18 +266,6 @@ class Dialogs {
     );
 
     showDialog(context: context, builder: (BuildContext context) => dialog);
-  }
-
-  /// Calculate the number is percent of another number
-  ///
-  /// `whole` The 100% number of yours
-  ///
-  /// `targetPercent` How much percent you need from the whole
-  ///
-  /// Returns the number is x% of the whole number
-  /// For example calculatePercent(100, 10) will return 10)
-  static double calculatePercent(double whole, double targetPercent) {
-    return (targetPercent * whole) / 100;
   }
 
   /// Showing alert dialog with radio button tiles inside it
@@ -382,29 +373,27 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
       }
 
       content.add(
-        RadioListTile(
-          groupValue: _selected,
-          value: value.data,
-          title: Text(name),
-          onChanged: (changedVal) {
-            setState(() => _selected = name);
-            submit();
-          }
-        )
+          RadioListTile(
+              groupValue: _selected,
+              value: value.data,
+              title: Text(name),
+              onChanged: (changedVal) {
+                setState(() => _selected = name);
+                submit();
+              }
+          )
       );
     });
 
+    content.add(FlatButton(child: Text('Cancel'), onPressed: () => Navigator.pop(context)));
     return content;
   }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return SimpleDialog(
         title: Text(widget.title),
-        content: ListView(children: _buildList()),
-        actions: [
-            FlatButton(child: Text('Cancel'), onPressed: () => Navigator.pop(context))
-        ]
+        children: _buildList()
     );
   }
 }
