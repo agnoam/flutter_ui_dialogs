@@ -401,9 +401,9 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
         title: Text(widget.title),
-        children: _buildList(),
-        action: [
-            FlatButton(title: Text('Cancel'), onPressed: () => Navigator.pop(context))
+        content: ListView(children: _buildList()),
+        actions: [
+            FlatButton(child: Text('Cancel'), onPressed: () => Navigator.pop(context))
         ]
     );
   }
