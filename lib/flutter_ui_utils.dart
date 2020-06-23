@@ -280,17 +280,17 @@ class Dialogs {
   /// and the ChoiceData as value
   ///
   /// `onSubmit` a function to run after the user choose a button
-  static void multiChoiceAlert({
+  static void multiChoiceAlert<T>({
     @required BuildContext context,
     String title,
     String body,
     @required Map<String, ChoiceData> options,
-    @required CallBackFunc onSubmit
+    @required void Function(T data) onSubmit
   }) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return _ChoicesDialog(
+        return _ChoicesDialog<T>(
           title: title,
           body: body,
           options: options,
@@ -301,8 +301,8 @@ class Dialogs {
   }
 }
 
-class ChoiceData {
-  dynamic data;
+class ChoiceData<T> {
+  T data;
   bool isFocused;
 
   /// Object of Dialogs.multiChoiceAlert radio tiles alert
@@ -313,12 +313,11 @@ class ChoiceData {
   ChoiceData({ this.isFocused = false, @required this.data });
 }
 
-typedef void CallBackFunc(value);
-class _ChoicesDialog extends StatefulWidget {
+class _ChoicesDialog<T> extends StatefulWidget {
   final String title;
   final String body;
   final Map<String, ChoiceData> options;
-  final CallBackFunc onSubmit;
+  final void Function(T data) onSubmit;
 
   /// Title of the dialog's body widget
   ///
