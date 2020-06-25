@@ -366,22 +366,21 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
     ];
 
     widget.options.forEach((String name, ChoiceData value) {
-//      if (!alreadyFocused && value.isFocused) {
-//        setState(() => _selected = name);
-//        alreadyFocused = true;
-//      }
+      if (!alreadyFocused && value.isFocused) {
+        setState(() => _selected = name);
+        alreadyFocused = true;
+      }
 
       content.add(
-          RadioListTile(
-              groupValue: _selected,
-              selected: !alreadyFocused && value.isFocused,
-              value: value.data,
-              title: Text(name),
-              onChanged: (changedVal) {
-                setState(() => _selected = name);
-                submit();
-              }
-          )
+        RadioListTile(
+          groupValue: _selected,
+          value: value.data,
+          title: Text(name),
+          onChanged: (changedVal) {
+            setState(() => _selected = name);
+            submit();
+          }
+        )
       );
     });
 
