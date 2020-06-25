@@ -106,11 +106,11 @@ class Dialogs {
     assert(text != null);
 
     ProgressHUD progressSpinner = ProgressHUD(
-        backgroundColor: backgroundColor != null ? backgroundColor : Colors.black12,
-        color: color != null ? color : Theme.of(context).primaryColorLight,
-        containerColor: containerColor != null ? containerColor : Colors.transparent,
-        borderRadius: borderRadius != null ? borderRadius : 5.0,
-        text: text != '' ? text : 'Loading...'
+      backgroundColor: backgroundColor != null ? backgroundColor : Colors.black12,
+      color: color != null ? color : Theme.of(context).primaryColorLight,
+      containerColor: containerColor != null ? containerColor : Colors.transparent,
+      borderRadius: borderRadius != null ? borderRadius : 5.0,
+      text: text != '' ? text : 'Loading...'
     );
 
     showDialog(context: context, barrierDismissible: false, builder: (BuildContext context) => progressSpinner);
@@ -176,7 +176,7 @@ class Dialogs {
             title: Text(title),
             children: <Widget>[
               Padding(
-                padding: EdgeInsets.only(left: 25, bottom: 10),
+                padding: EdgeInsets.only(left: 25, right: 25, bottom: 10),
                 child: Text(body)
               ),
               Padding(

@@ -1,3 +1,2 @@
-## [0.0.1] - TODO: Add release date.
-
-* TODO: Describe initial release.
+## 1.7.2 (25-06-2020)
+* Updated prompt content view padding
