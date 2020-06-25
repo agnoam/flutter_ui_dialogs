@@ -386,10 +386,15 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
     });
 
     content.add(
-      Row(children: [FlatButton(
-          child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
-          onPressed: () => Navigator.pop(context)
-      )])
+      Row(
+        textDirection: TextDirection.rtl,
+        children: [
+          FlatButton(
+            child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
+            onPressed: () => Navigator.pop(context)
+          )
+        ]
+      )
     );
 
     return content;
