@@ -344,7 +344,7 @@ class _ChoicesDialog<T> extends StatefulWidget {
 }
 
 class _ChoicesDialogState extends State<_ChoicesDialog> {
-  String _selected;
+  String _selected = '';
 
   // The function that calls the callback after the dialog hide
   void submit() {
@@ -372,7 +372,7 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
       }
 
       content.add(
-        RadioListTile(
+        RadioListTile<String>(
           groupValue: _selected,
           value: value.data,
           title: Text(name),
