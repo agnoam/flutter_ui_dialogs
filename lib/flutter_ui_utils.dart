@@ -280,29 +280,31 @@ class Dialogs {
   /// and the ChoiceData as value
   ///
   /// `onSubmit` a function to run after the user choose a button
-  static void multiChoiceAlert<T>({
+  static void multiChoiceAlert({
     @required BuildContext context,
     String title,
     String body,
     @required Map<String, ChoiceData> options,
-    @required void Function(T data) onSubmit
+    @required void Function(dynamic data) onSubmit
   }) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return _ChoicesDialog<T>(
-          title: title,
-          body: body,
-          options: options,
-          onSubmit: onSubmit
+        return Center(
+          child: _ChoicesDialog(
+            title: title,
+            body: body,
+            options: options,
+            onSubmit: onSubmit
+          ),
         );
       }
     );
   }
 }
 
-class ChoiceData<T> {
-  T data;
+class ChoiceData {
+  dynamic data;
   bool isFocused;
 
   /// Object of Dialogs.multiChoiceAlert radio tiles alert
@@ -313,11 +315,11 @@ class ChoiceData<T> {
   ChoiceData({ this.isFocused = false, @required this.data });
 }
 
-class _ChoicesDialog<T> extends StatefulWidget {
+class _ChoicesDialog extends StatefulWidget {
   final String title;
   final String body;
   final Map<String, ChoiceData> options;
-  final void Function(T data) onSubmit;
+  final void Function(dynamic data) onSubmit;
 
   /// Title of the dialog's body widget
   ///
@@ -347,9 +349,9 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
   String _selected = '';
 
   // The function that calls the callback after the dialog hide
-  void submit() {
+  void submit(selectedData) {
     Navigator.pop(context);
-    widget.onSubmit(widget.options[_selected].data);
+    widget.onSubmit(selectedData);
   }
 
   // Tiles generator
@@ -357,43 +359,46 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
     bool alreadyFocused = false;
     List<Widget> content = [
       widget.body.isNotEmpty ?
-        Padding(
-            padding: EdgeInsets.only(left: 25, bottom: 5),
-            child: Text(widget.body)
-        )
-      :
-        SizedBox()
+      Padding(
+          padding: EdgeInsets.only(left: 25, bottom: 5),
+          child: Text(widget.body)
+      )
+          :
+      SizedBox()
     ];
 
     widget.options.forEach((String name, ChoiceData value) {
       if (!alreadyFocused && value.isFocused) {
-        setState(() => _selected = name);
+        _selected = value.data;
         alreadyFocused = true;
       }
 
+      print('groupValue: $name');
       content.add(
-        RadioListTile<String>(
-          groupValue: _selected,
-          value: value.data,
-          title: Text(name),
-          onChanged: (changedVal) {
-            setState(() => _selected = name);
-            submit();
-          }
-        )
+          RadioListTile(
+              groupValue: _selected,
+              value: value.data,
+              title: Text(name),
+              onChanged: (changedVal) {
+                setState(() => _selected = changedVal);
+                submit(changedVal);
+              }
+          )
       );
     });
 
+    print('_selected: $_selected');
+
     content.add(
-      Row(
-        textDirection: TextDirection.rtl,
-        children: [
-          FlatButton(
-            child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
-            onPressed: () => Navigator.pop(context)
-          )
-        ]
-      )
+        Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              FlatButton(
+                  child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
+                  onPressed: () => Navigator.pop(context)
+              )
+            ]
+        )
     );
 
     return content;
