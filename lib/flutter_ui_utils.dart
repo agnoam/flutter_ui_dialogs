@@ -337,16 +337,16 @@ class _ChoicesDialog extends StatefulWidget {
     @required this.options,
     @required this.onSubmit
   }) :
-        assert(title != null),
-        assert(options != null),
-        assert(onSubmit != null);
+      assert(title != null),
+      assert(options != null),
+      assert(onSubmit != null);
 
   @override
   _ChoicesDialogState createState() => _ChoicesDialogState();
 }
 
 class _ChoicesDialogState extends State<_ChoicesDialog> {
-  String _selected = '';
+  dynamic _selected = '';
 
   // The function that calls the callback after the dialog hide
   void submit(selectedData) {
@@ -359,12 +359,12 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
     bool alreadyFocused = false;
     List<Widget> content = [
       widget.body.isNotEmpty ?
-      Padding(
+        Padding(
           padding: EdgeInsets.only(left: 25, bottom: 5),
           child: Text(widget.body)
-      )
-          :
-      SizedBox()
+        )
+      :
+        SizedBox()
     ];
 
     widget.options.forEach((String name, ChoiceData value) {
@@ -373,7 +373,6 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
         alreadyFocused = true;
       }
 
-      print('groupValue: $name');
       content.add(
           RadioListTile(
               groupValue: _selected,
@@ -387,18 +386,16 @@ class _ChoicesDialogState extends State<_ChoicesDialog> {
       );
     });
 
-    print('_selected: $_selected');
-
     content.add(
-        Row(
-            textDirection: TextDirection.rtl,
-            children: [
-              FlatButton(
-                  child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
-                  onPressed: () => Navigator.pop(context)
-              )
-            ]
-        )
+      Row(
+        textDirection: TextDirection.rtl,
+        children: [
+          FlatButton(
+            child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
+            onPressed: () => Navigator.pop(context)
+          )
+        ]
+      )
     );
 
     return content;
